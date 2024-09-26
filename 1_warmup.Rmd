@@ -22,6 +22,7 @@ Assume the following definitions for a survey:
 Generate a vector with 100 random samples that specifies the age of 100 people (in years), but contains exactly 20 minors, 50 adults, and 30 seniors.
 
 ```{r}
+age = c(sample(1:17, 20, replace=TRUE), sample(18:64, 50, replace=TRUE), sample(65:99, 30, replace=TRUE))
 
 ```
 
@@ -30,28 +31,36 @@ Now use some functions on your age vector to answer the following questions:
 1.  What is the average (mean), minimum, and maximum age in this sample?
 
 ```{r}
-
+summary(age)
 ```
 
 2.  How many people are younger than 25 years?
 
 ```{r}
-
+as.data.frame(age) %>% 
+  filter(age < 25) %>% 
+  nrow()
 ```
 
 3.  What is the average (mean) age of people older than 50 years?
 
 ```{r}
+age_dataframe <- as.data.frame(age)
 
+age_dataframe %>% 
+  filter(age > 50) %>% 
+  summarise(mean_age_over_50 = mean(age))
+  
 ```
 
 4.  How many people have a round age (i.e., an age that is divisible by 10)? What is their mean age?
 
 ```{r}
-
+age_dataframe %>% 
+  filter(age%%10 == 0) %>% 
+  summarise(mean_round_age = mean(age), count = n())
 ```
-
-## Exercise 1: Strange histograms
+## Exercise 1: Strange histograms## Exercise 1: Stagerange histograms
 
 The following plot shows the distribution of fuel economy in city environments, but adds a frequency polygon as a 2nd geom (see ?geom_freqpoly).
 
@@ -60,20 +69,20 @@ data(mpg)
 
 ggplot(mpg, aes(x = cty)) +    # set mappings for ALL geoms
   geom_histogram(aes(x = cty), binwidth = 2, fill = "gold", color = "black") +
-  geom_freqpoly(color = "steelblue", size = 2) +
+  geom_freqpoly(color = "steelblue", size = 2, binwidth = 2) +
   labs(title = "Distribution of fuel economy", 
        x = "Miles per gallon (in city)",
        caption = "Data from ggplot2::mpg") +
   theme_light()
 ```
 
-1.  Why is the (blue) line of the polygon lower than the (yellow) bars of the histogram?
+1.  Why is the (blue) line of the polygon lower than the (yellow) bars of the histogram? #The binwidth for the polygon is 1, as opposed to 2 in the histogram.
 
 2.  Change 1 argument in the code so that both (lines and bars) have the same heights.
 
-3.  The code above repeats the aesthetic mapping aes(x = cty) in 2 locations. Which of these can be deleted without changing the resulting graph? Why?
+3.  The code above repeats the aesthetic mapping aes(x = cty) in 2 locations. Which of these can be deleted without changing the resulting graph? Why? # We can delete the one contained in geom_histogram, since the one in ggplot already sets the aesthetics for the entire object.
 
-4.  Why can't we simply replace geom_freqpoly by geom_line or geom_smooth to get a similar line?
+4.  Why can't we simply replace geom_freqpoly by geom_line or geom_smooth to get a similar line? # Because none of these can function without a specified y variable. Freqpoly calculates it from counts.
 
 ## Exercise 2: Chick diets
 
@@ -82,11 +91,24 @@ The ChickWeight data (contained in the datasets package of R) contains the resul
 1.  Save the ChickWeight data as a tibble chick_weight and inspect its dimensions and variables.
 
 ```{r}
-data("ChickWeight")
+chick_weight <- ChickWeight
+glimpse(chick_weight)
 ```
 
 2.  Create a line plot showing the weight development of each individual chick (on the y-axis) over Time (on the x-axis) for each Diet (in 4 different facets).
 
+```{r}
+chick_weight %>% 
+  ggplot(aes(x = Time, y = weight, colour = Diet)) +
+  geom_line() +
+  facet_wrap(~ Diet)
+```
+
 3.  The following bar chart shows the number of chicks per Diet over Time. We see that the initial Diet groups contain a different number of chicks and some chicks drop out over Time. Try re-creating this plot (with geom_bar and dodged bar positions).
 
 ![](chicks-diets.png)
+```{r}
+chick_weight %>% 
+  ggplot(aes(x = Time, fill = Diet, group = factor(Diet))) +
+  geom_bar(position = position_dodge(width = 1))
+`````````
